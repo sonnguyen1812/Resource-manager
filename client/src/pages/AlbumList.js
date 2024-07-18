@@ -15,7 +15,7 @@ const AlbumList = () => {
       <Grid item xs={12}>
         <Typography variant="h4">Albums</Typography>
       </Grid>
-      {albums.map(album => (
+      {albums && albums.map(album => (
         <Grid item xs={12} key={album.id}>
           <Card>
             <CardContent>
@@ -26,7 +26,7 @@ const AlbumList = () => {
             </CardContent>
           </Card>
         </Grid>
-      ))}
+        ))}
     </Grid>
   );
 };
