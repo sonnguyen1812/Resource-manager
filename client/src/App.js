@@ -12,8 +12,8 @@ import Layout from './components/Layout';
 
 function App() {
   let routes = useRoutes([
-    { path: "/", element: <Dashboard /> },
-    { path: "/dashboard", element: <Dashboard /> },
+    { path: "/", element:<Layout><Dashboard /></Layout>  },
+    { path: "/dashboard", element: <Layout><Dashboard /></Layout> },
     { path: "/profile", element: <Layout><UserProfile /></Layout> },
     { path: "/posts", element: <Layout><PostList /></Layout> },
     { path: "/posts/:postId", element: <Layout><PostDetail /></Layout> },

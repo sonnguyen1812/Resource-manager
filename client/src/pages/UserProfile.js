@@ -1,85 +1,151 @@
-// src/pages/UserProfile.js
-import React, { useEffect, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { fetchUsers, fetchUserById } from '../redux/slices/userSlice';
-import {createTheme, ThemeProvider } from '@mui/material/styles';
-import {
-  Box,
-  List,
-  ListItemText,
-  ListItemAvatar,
-  Avatar,
-  Typography,
-  Divider,
-  Paper,
-  CssBaseline,
-  ListItemButton
-} from '@mui/material';
-
-const defaultTheme = createTheme();
+import React, { useEffect } from "react";
+import { useParams } from "react-router-dom";
+import { Grid, Typography, Card, CardContent } from "@mui/material";
+import { usePostContext } from "../context/PostContext";
+import { useAlbumContext } from "../context/AlbumContext";
+import { useTodoContext } from "../context/TodoContext";
+import { useUserContext } from "../context/UserContext";
 
 const UserProfile = () => {
-  const dispatch = useDispatch();
-  const users = useSelector((state) => state.users.items);
-  const selectedUser = useSelector((state) => state.users.selectedUser);
-  const [selectedUserId, setSelectedUserId] = useState(null);
+    const { userId } = useParams();
+    const {
+        state: { items: posts },
+        fetchPosts,
+    } = usePostContext();
+    const {
+        state: { items: albums },
+        fetchAlbums,
+    } = useAlbumContext();
+    const {
+        state: { items: todos },
+        fetchTodos,
+    } = useTodoContext();
+    const {
+        state: { items: users, selectedUser },
+        fetchUsers,
+        fetchUserById,
+    } = useUserContext();
 
-  useEffect(() => {
-    dispatch(fetchUsers());
-  }, [dispatch]);
+    useEffect(() => {
+        fetchPosts();
+        fetchAlbums();
+        fetchTodos();
+        fetchUsers();
+        fetchUserById(userId);
+    }, [
+        fetchPosts,
+        fetchAlbums,
+        fetchTodos,
+        fetchUsers,
+        fetchUserById,
+        userId,
+    ]);
 
-  useEffect(() => {
-    if (selectedUserId !== null) {
-      dispatch(fetchUserById(selectedUserId));
-    }
-  }, [dispatch, selectedUserId]);
+    if (!selectedUser) return null;
 
-  const handleUserClick = (userId) => {
-    setSelectedUserId(userId);
-  };
+    return (
+        <Grid container spacing={3}>
+            <Grid item xs={12}>
+                <Typography variant="h4">User Profile</Typography>
+                <Card>
+                    <CardContent>
+                        <Typography variant="h5">
+                            {selectedUser.name}
+                        </Typography>
+                        <Typography variant="subtitle1">
+                            {selectedUser.email}
+                        </Typography>
+                        <Typography variant="subtitle1">
+                            Username: {selectedUser.username}
+                        </Typography>
+                        <Typography variant="subtitle1">
+                            Phone: {selectedUser.phone}
+                        </Typography>
+                        <Typography variant="subtitle1">
+                            Website: {selectedUser.website}
+                        </Typography>
+                    </CardContent>
+                </Card>
+            </Grid>
+            <Grid item xs={12}>
+                <Typography variant="h5">Users</Typography>
+                <Grid container spacing={2}>
+                    {users.map((user) => (
+                        <Grid item xs={12} key={user.id}>
+                            <Card>
+                                <CardContent>
+                                    <Typography variant="h6">
+                                        {user.name}
+                                    </Typography>
+                                    <Typography variant="subtitle1">
+                                        {user.email}
+                                    </Typography>
+                                    {/* Display other user information */}
+                                </CardContent>
+                            </Card>
+                        </Grid>
+                    ))}
+                </Grid>
+            </Grid>
 
-  return (
-    <ThemeProvider theme={defaultTheme}>
-      <CssBaseline />
-      <Box sx={{ display: 'flex', p: 3 }}>
-        <Box sx={{ flex: 1 }}>
-          <Paper elevation={3} sx={{ p: 2 }}>
-            <Typography variant="h6">User List</Typography>
-            <List>
-              {users.map((user) => (
-                <ListItemButton
-                  button
-                  key={user.id}
-                  onClick={() => handleUserClick(user.id)}
-                  selected={selectedUserId === user.id}
-                >
-                  <ListItemAvatar>
-                    <Avatar>{user.name.charAt(0)}</Avatar>
-                  </ListItemAvatar>
-                  <ListItemText primary={user.name} secondary={user.email} />
-                </ListItemButton>
-              ))}
-            </List>
-          </Paper>
-        </Box>
-        <Divider orientation="vertical" flexItem />
-        <Box sx={{ flex: 2, ml: 3 }}>
-          {selectedUser && (
-            <Paper elevation={3} sx={{ p: 2 }}>
-              <Typography variant="h6">User Details</Typography>
-              <Typography variant="body1"><strong>Name:</strong> {selectedUser.name}</Typography>
-              <Typography variant="body1"><strong>Username:</strong> {selectedUser.username}</Typography>
-              <Typography variant="body1"><strong>Email:</strong> {selectedUser.email}</Typography>
-              <Typography variant="body1"><strong>Phone:</strong> {selectedUser.phone}</Typography>
-              <Typography variant="body1"><strong>Website:</strong> {selectedUser.website}</Typography>
-              <Typography variant="body1"><strong>Company:</strong> {selectedUser.company.name}</Typography>
-              <Typography variant="body1"><strong>Address:</strong> {`${selectedUser.address.suite}, ${selectedUser.address.street}, ${selectedUser.address.city}, ${selectedUser.address.zipcode}`}</Typography>
-            </Paper>
-          )}
-        </Box>
-      </Box>
-    </ThemeProvider>
-  );
+            <Grid item xs={12} md={6}>
+                <Typography variant="h5">Posts</Typography>
+                <Grid container spacing={2}>
+                    {posts.map((post) => (
+                        <Grid item xs={12} key={post.id}>
+                            <Card>
+                                <CardContent>
+                                    <Typography variant="h6">
+                                        {post.title}
+                                    </Typography>
+                                    <Typography variant="body1">
+                                        {post.body}
+                                    </Typography>
+                                </CardContent>
+                            </Card>
+                        </Grid>
+                    ))}
+                </Grid>
+            </Grid>
+            <Grid item xs={12} md={6}>
+                <Typography variant="h5">Albums</Typography>
+                <Grid container spacing={2}>
+                    {albums.map((album) => (
+                        <Grid item xs={12} key={album.id}>
+                            <Card>
+                                <CardContent>
+                                    <Typography variant="h6">
+                                        {album.title}
+                                    </Typography>
+                                </CardContent>
+                            </Card>
+                        </Grid>
+                    ))}
+                </Grid>
+            </Grid>
+            <Grid item xs={12}>
+                <Typography variant="h5">Todos</Typography>
+                <Grid container spacing={2}>
+                    {todos.map((todo) => (
+                        <Grid item xs={12} key={todo.id}>
+                            <Card>
+                                <CardContent>
+                                    <Typography variant="h6">
+                                        {todo.title}
+                                    </Typography>
+                                    <Typography variant="body1">
+                                        {todo.completed
+                                            ? "Completed"
+                                            : "Incomplete"}
+                                    </Typography>
+                                </CardContent>
+                            </Card>
+                        </Grid>
+                    ))}
+                </Grid>
+            </Grid>
+        </Grid>
+    );
 };
 
 export default UserProfile;

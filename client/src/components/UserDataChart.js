@@ -1,16 +1,19 @@
 import React from 'react';
 import { Bar } from 'react-chartjs-2';
-import { useSelector } from 'react-redux';
+import { usePostContext } from '../context/PostContext';
+import { useAlbumContext } from '../context/AlbumContext';
+import { usePhotoContext } from '../context/PhotoContext';
+import { useTodoContext } from '../context/TodoContext';
 import { Card, CardContent, Typography } from '@mui/material';
 import { Chart, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend } from 'chart.js';
 
 Chart.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
 const UserDataChart = () => {
-  const posts = useSelector((state) => state.posts.items);
-  const albums = useSelector((state) => state.albums.items);
-  const photos = useSelector((state) => state.photos.items);
-  const todos = useSelector((state) => state.todos.items);
+  const { state: { items: posts = [] } } = usePostContext();
+  const { state: { items: albums = [] } } = useAlbumContext();
+  const { state: { items: photos = [] } } = usePhotoContext();
+  const { state: { items: todos = [] } } = useTodoContext();
 
   const data = {
     labels: ['Posts', 'Albums', 'Photos', 'Todos'],

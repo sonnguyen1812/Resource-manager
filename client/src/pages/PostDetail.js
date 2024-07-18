@@ -1,70 +1,54 @@
-import React, { useEffect, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import React, { useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { fetchPostById, fetchCommentsByPostId, addComment } from '../redux/slices/postSlice';
-import { Container, Card, CardContent, Typography, TextField, Button, List, ListItem, ListItemText } from '@mui/material';
+import { Grid, Typography, Card, CardContent } from '@mui/material';
+import { usePostContext } from '../context/PostContext';
+import { useUserContext } from '../context/UserContext';
+import { useCommentContext } from '../context/CommentContext';
 
 const PostDetail = () => {
   const { postId } = useParams();
-  const dispatch = useDispatch();
-  const post = useSelector((state) => state.posts.selectedPost);
-  const comments = useSelector((state) => state.posts.comments);
-  const [newComment, setNewComment] = useState('');
+  const { state: { selectedPost, comments }, fetchPostById, fetchCommentsByPostId } = usePostContext();
+  const { state: { items: users }, fetchUsers } = useUserContext();
+  const { addComment } = useCommentContext();
 
   useEffect(() => {
-    if (postId) {
-      dispatch(fetchPostById(postId));
-      dispatch(fetchCommentsByPostId(postId));
-    }
-  }, [dispatch, postId]);
+    fetchPostById(postId);
+    fetchCommentsByPostId(postId);
+    fetchUsers();
+  }, [fetchPostById, fetchCommentsByPostId, fetchUsers, postId]);
 
   const handleAddComment = () => {
-    if (newComment.trim()) {
-      dispatch(addComment({ postId, body: newComment }));
-      setNewComment('');
+    const body = prompt('Enter your comment:');
+    if (body) {
+      addComment({ postId, body });
     }
   };
 
+  if (!selectedPost) return null;
+
   return (
-    <Container>
-      {post && (
-        <Card>
-          <CardContent>
-            <Typography variant="h4" gutterBottom>
-              {post.title}
-            </Typography>
-            <Typography variant="body1" gutterBottom>
-              {post.body}
-            </Typography>
-          </CardContent>
-        </Card>
-      )}
-
-      <Typography variant="h5" gutterBottom sx={{ mt: 3 }}>
-        Comments
-      </Typography>
-      <List>
-        {comments.map((comment) => (
-          <ListItem key={comment.id}>
-            <ListItemText primary={comment.body} />
-          </ListItem>
-        ))}
-      </List>
-
-      <TextField
-        label="New Comment"
-        variant="outlined"
-        fullWidth
-        multiline
-        rows={4}
-        value={newComment}
-        onChange={(e) => setNewComment(e.target.value)}
-        sx={{ mt: 3, mb: 3 }}
-      />
-      <Button variant="contained" color="primary" onClick={handleAddComment}>
-        Add Comment
-      </Button>
-    </Container>
+    <Grid container spacing={3}>
+      <Grid item xs={12}>
+        <Typography variant="h4">{selectedPost.title}</Typography>
+        <Typography variant="subtitle1">Author: {users.find(user => user.id === selectedPost.userId)?.name}</Typography>
+        <Typography variant="body1">{selectedPost.body}</Typography>
+      </Grid>
+      <Grid item xs={12}>
+        <Typography variant="h5">Comments</Typography>
+        <Grid container spacing={2}>
+          {comments.map(comment => (
+            <Grid item xs={12} key={comment.id}>
+              <Card>
+                <CardContent>
+                  <Typography variant="body1">{comment.body}</Typography>
+                </CardContent>
+              </Card>
+            </Grid>
+          ))}
+        </Grid>
+        <button onClick={handleAddComment}>Add Comment</button>
+      </Grid>
+    </Grid>
   );
 };
 
