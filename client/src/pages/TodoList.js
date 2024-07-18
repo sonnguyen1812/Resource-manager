@@ -1,53 +1,41 @@
-import React, { useEffect, useState } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
-import { fetchTodos } from '../redux/slices/todoSlice';
-import { Container, Typography, List, ListItem, ListItemText, TextField, MenuItem, Select, FormControl, InputLabel, Checkbox, ListItemSecondaryAction } from '@mui/material';
+import React, { useEffect } from 'react';
+import { Grid, Typography, Card, CardContent, Checkbox } from '@mui/material';
+import { useTodoContext } from '../context/TodoContext';
 
 const TodoList = () => {
-  const dispatch = useDispatch();
-  const todos = useSelector((state) => state.todos.items);
-  const [filter, setFilter] = useState('');
-  const [sort, setSort] = useState('asc');
+  const { state: { items: todos }, fetchTodos, toggleTodo } = useTodoContext();
 
   useEffect(() => {
-    dispatch(fetchTodos());
-  }, [dispatch]);
+    fetchTodos();
+  }, [fetchTodos]);
 
-  const handleFilterChange = (e) => {
-    setFilter(e.target.value);
+  const handleToggleTodo = (todoId) => {
+    toggleTodo(todoId);
+    // Normally, you would also make an API call to update the todo
+    // and handle any potential errors or side effects.
   };
-
-  const handleSortChange = (e) => {
-    setSort(e.target.value);
-  };
-
-  const filteredTodos = todos.filter(todo => todo.title.includes(filter));
-  const sortedTodos = filteredTodos.sort((a, b) => sort === 'asc' ? a.title.localeCompare(b.title) : b.title.localeCompare(a.title));
 
   return (
-    <Container>
-      <Typography variant="h4" gutterBottom>Todo List</Typography>
-      <FormControl fullWidth margin="normal">
-        <TextField label="Filter" variant="outlined" value={filter} onChange={handleFilterChange} />
-      </FormControl>
-      <FormControl fullWidth margin="normal">
-        <InputLabel>Sort</InputLabel>
-        <Select value={sort} onChange={handleSortChange}>
-          <MenuItem value="asc">Ascending</MenuItem>
-          <MenuItem value="desc">Descending</MenuItem>
-        </Select>
-      </FormControl>
-      <List>
-        {sortedTodos.map((todo) => (
-          <ListItem key={todo.id}>
-            <ListItemText primary={todo.title} />
-            <ListItemSecondaryAction>
-              <Checkbox edge="end" checked={todo.completed} />
-            </ListItemSecondaryAction>
-          </ListItem>
-        ))}
-      </List>
-    </Container>
+    <Grid container spacing={3}>
+      <Grid item xs={12}>
+        <Typography variant="h4">Todos</Typography>
+      </Grid>
+      {todos.map(todo => (
+        <Grid item xs={12} key={todo.id}>
+          <Card>
+            <CardContent>
+              <Typography variant="h5">{todo.title}</Typography>
+              <Typography variant="body1">{todo.completed ? 'Completed' : 'Incomplete'}</Typography>
+              <Checkbox
+                checked={todo.completed}
+                onChange={() => handleToggleTodo(todo.id)}
+                inputProps={{ 'aria-label': 'toggle todo' }}
+              />
+            </CardContent>
+          </Card>
+        </Grid>
+      ))}
+    </Grid>
   );
 };
 
